@@ -107,15 +107,9 @@ async function run() {
       console.log('Sample lead:', JSON.stringify(leads[0], null, 2));
     }
 
-    // ── TEST 3: Free-limit truncation ──
-    console.log('\n[Test 3] Free limit (10 leads)...');
-    const FREE_LIMIT = 10;
-    const forExport = leads.slice(0, FREE_LIMIT);
-    console.log(`✅ Truncated to ${forExport.length} (from ${leads.length} total)`);
-
-    // ── TEST 4: CSV generation ──
-    console.log('\n[Test 4] CSV generation...');
-    const csv = toCSV(forExport);
+    // ── TEST 3: CSV generation ──
+    console.log('\n[Test 3] CSV generation...');
+    const csv = toCSV(leads);
     const csvPath = path.join(DOWNLOAD_DIR, `mapleads_${result.query.replace(/\W+/g, '_') || 'test'}.csv`);
     fs.writeFileSync(csvPath, csv, 'utf8');
     const lines = csv.trim().split('\n');
@@ -124,15 +118,14 @@ async function run() {
     console.log(`✅ Saved to ${csvPath}`);
   }
 
-  // ── TEST 5: License flow (UI check) ──
-  console.log('\n[Test 5] Checking popup HTML exists...');
+  // ── TEST 4: Manifest sanity check ──
+  console.log('\n[Test 4] Checking files exist...');
   const popupHtml = path.join(EXT_PATH, 'popup.html');
   const manifestJson = path.join(EXT_PATH, 'manifest.json');
   console.log('popup.html:', fs.existsSync(popupHtml) ? '✅ exists' : '❌ missing');
   console.log('manifest.json:', fs.existsSync(manifestJson) ? '✅ exists' : '❌ missing');
   const manifest = JSON.parse(fs.readFileSync(manifestJson, 'utf8'));
   console.log('Permissions:', manifest.permissions.join(', '));
-  console.log('host_permissions:', (manifest.host_permissions || []).join(', '));
   console.log('activeTab present:', manifest.permissions.includes('activeTab') ? '✅' : '❌');
   console.log('tabs present:', manifest.permissions.includes('tabs') ? '✅' : '❌');
 

@@ -13,16 +13,6 @@
     }
     .header { margin-bottom: 4px; }
     .header h1 { font-size: 16px; font-weight: 700; display: inline; }
-    .badge-pro {
-      font-size: 10px;
-      background: linear-gradient(135deg, #059669, #34d399);
-      color: white;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 600;
-      margin-left: 6px;
-      display: none;
-    }
     .usage-info {
       font-size: 11px;
       color: #888;
@@ -153,105 +143,13 @@
       margin-bottom: 12px;
       display: none;
     }
-    .paywall-notice {
-      background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-      border: 1px solid #a7f3d0;
-      border-radius: 8px;
-      padding: 12px;
-      margin-top: 10px;
-      text-align: center;
-      line-height: 1.5;
-      display: none;
-    }
-    .paywall-notice .paywall-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #1a1a1a;
-      margin-bottom: 4px;
-    }
-    .paywall-notice .paywall-desc {
-      font-size: 11px;
-      color: #666;
-      margin-bottom: 8px;
-    }
-    .paywall-notice .upgrade-btn {
-      display: inline-block;
-      background: #059669;
-      color: white;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 12px;
-      padding: 6px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      border: none;
-      margin-bottom: 8px;
-    }
-    .paywall-notice .upgrade-btn:hover { background: #047857; }
-    .pro-only-badge {
-      font-size: 9px;
-      background: linear-gradient(135deg, #059669, #34d399);
-      color: white;
-      padding: 1px 5px;
-      border-radius: 3px;
-      font-weight: 600;
-      margin-left: 4px;
-    }
-    .activate-section {
-      margin-top: 10px;
-      text-align: center;
-    }
-    .activate-toggle {
-      font-size: 11px;
-      color: #059669;
-      cursor: pointer;
-      background: none;
-      border: none;
-      font-weight: 600;
-    }
-    .activate-toggle:hover { text-decoration: underline; }
-    .key-input-row {
-      display: none;
-      margin-top: 8px;
-      gap: 6px;
-    }
-    .key-input-row.visible { display: flex; }
-    .key-input-row input {
-      flex: 1;
-      padding: 8px 10px;
-      border: 1px solid #e5e5e5;
-      border-radius: 6px;
-      font-size: 12px;
-      font-family: monospace;
-      outline: none;
-    }
-    .key-input-row input:focus { border-color: #059669; }
-    .key-input-row button {
-      padding: 8px 14px;
-      background: #059669;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .key-input-row button:hover { background: #047857; }
-    #keyStatus {
-      font-size: 11px;
-      margin-top: 4px;
-      min-height: 14px;
-    }
-    #keyStatus.error { color: #e53935; }
-    #keyStatus.success { color: #2e7d32; }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>MapLeads</h1>
-    <span class="badge-pro" id="proBadge">PRO</span>
   </div>
-  <div class="usage-info" id="usageInfo"></div>
+  <div class="usage-info">Export every result. Free and open source.</div>
 
   <div class="section">
     <div class="section-title">Options</div>
@@ -292,7 +190,7 @@
     </div>
     <div class="checkbox-row">
       <input type="checkbox" id="cb-hours">
-      <label for="cb-hours">Business hours <span class="pro-only-badge" id="hoursProBadge">PRO</span></label>
+      <label for="cb-hours">Business hours</label>
     </div>
     <div class="checkbox-row">
       <input type="checkbox" id="cb-mapsurl" checked>
@@ -312,21 +210,6 @@
 
   <button id="scrapeBtn">Extract Leads</button>
   <div id="status"></div>
-
-  <div class="paywall-notice" id="paywall-notice">
-    <div class="paywall-title">$139 · Lifetime License</div>
-    <div class="paywall-desc">Unlimited usage, lifetime.</div>
-    <button class="upgrade-btn" id="upgradeBtn">Buy PRO - $139</button>
-  </div>
-
-  <div class="activate-section" id="activateSection">
-    <button class="activate-toggle" id="activateToggle">Already purchased? Activate PRO</button>
-    <div class="key-input-row" id="keyInputRow">
-      <input type="text" id="licenseKeyInput" placeholder="Paste activation code">
-      <button id="activateBtn">Activate</button>
-    </div>
-    <div id="keyStatus"></div>
-  </div>
 
   <script src="popup.js"></script>
 </body>

@@ -6,11 +6,7 @@
   "permissions": [
     "tabs",
     "scripting",
-    "storage",
     "activeTab"
-  ],
-  "host_permissions": [
-    "https://flowengine.cloud/*"
   ],
   "action": {
     "default_popup": "popup.html",

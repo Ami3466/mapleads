@@ -1,45 +1,10 @@
-var STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/cNicN455Q0g86LKgJwdEs04';
-var FREE_LEADS_LIMIT = 10;
-var ACTIVATE_API = 'https://flowengine.cloud/api/mapleads/activate';
-var VERIFY_API = 'https://flowengine.cloud/api/mapleads/verify';
 var SCROLL_DELAY_MS = 800;
 var MAX_SCROLLS = 30;
 
 var selectedFormat = 'csv';
-var isPro = false;
 
 // ── Boot ──
-(async function boot() {
-  var stored = await chrome.storage.local.get(['isPro', 'sessionId']);
-
-  if (stored.isPro && stored.sessionId) {
-    // Re-verify on every open - prevents storage tampering
-    try {
-      var res = await fetch(VERIFY_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: stored.sessionId }),
-      });
-      var data = await res.json();
-      if (data.valid) {
-        isPro = true;
-      } else {
-        // Invalid session - clear PRO status
-        await chrome.storage.local.remove(['isPro', 'sessionId']);
-        isPro = false;
-      }
-    } catch (e) {
-      // Network error - trust stored status to avoid locking out offline users
-      isPro = stored.isPro || false;
-    }
-  } else {
-    // No session_id stored = not a real activation (storage was manually tampered)
-    isPro = false;
-    if (stored.isPro) await chrome.storage.local.remove(['isPro']);
-  }
-
-  renderUI();
-
+(function boot() {
   // Format toggle
   document.querySelectorAll('.format-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
@@ -49,97 +14,9 @@ var isPro = false;
     });
   });
 
-  // Hours checkbox paywall
-  document.getElementById('cb-hours').addEventListener('change', function() {
-    if (!isPro && this.checked) {
-      this.checked = false;
-      document.getElementById('paywall-notice').style.display = 'block';
-    }
-  });
-
-  document.getElementById('upgradeBtn').addEventListener('click', function() {
-    chrome.tabs.create({ url: STRIPE_PAYMENT_LINK });
-  });
-
-  // Activate PRO toggle
-  document.getElementById('activateToggle').addEventListener('click', function() {
-    document.getElementById('keyInputRow').classList.toggle('visible');
-  });
-
-  // Activate PRO button
-  document.getElementById('activateBtn').addEventListener('click', async function() {
-    var input = document.getElementById('licenseKeyInput').value.trim();
-    var keyStatus = document.getElementById('keyStatus');
-    var activateBtn = document.getElementById('activateBtn');
-
-    if (!input) {
-      keyStatus.className = 'error';
-      keyStatus.textContent = 'Paste your activation code.';
-      return;
-    }
-
-    activateBtn.disabled = true;
-    activateBtn.textContent = '...';
-    keyStatus.className = '';
-    keyStatus.textContent = '';
-
-    try {
-      var res = await fetch(ACTIVATE_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: input }),
-      });
-      var data = await res.json();
-
-      if (data.activated) {
-        isPro = true;
-        await chrome.storage.local.set({ isPro: true, sessionId: input });
-        keyStatus.className = 'success';
-        keyStatus.textContent = 'PRO activated!';
-        document.getElementById('keyInputRow').classList.remove('visible');
-        document.getElementById('activateSection').style.display = 'none';
-        renderUI();
-      } else {
-        keyStatus.className = 'error';
-        keyStatus.textContent = data.error || 'Activation failed.';
-      }
-    } catch (e) {
-      keyStatus.className = 'error';
-      keyStatus.textContent = 'Network error. Try again.';
-    }
-
-    activateBtn.disabled = false;
-    activateBtn.textContent = 'Activate';
-  });
-
   // Scrape button
   document.getElementById('scrapeBtn').addEventListener('click', handleScrape);
 })();
-
-// ── UI ──
-function renderUI() {
-  var badge = document.getElementById('proBadge');
-  var usageEl = document.getElementById('usageInfo');
-  var hoursProBadge = document.getElementById('hoursProBadge');
-  var hoursCb = document.getElementById('cb-hours');
-  var activateSection = document.getElementById('activateSection');
-  var paywall = document.getElementById('paywall-notice');
-
-  if (isPro) {
-    badge.style.display = 'inline';
-    hoursProBadge.style.display = 'none';
-    hoursCb.checked = true;
-    usageEl.textContent = 'PRO - unlimited leads';
-    usageEl.style.color = '#059669';
-    paywall.style.display = 'none';
-    activateSection.style.display = 'none';
-  } else {
-    badge.style.display = 'none';
-    usageEl.textContent = 'Free plan - first ' + FREE_LEADS_LIMIT + ' leads per scrape';
-    usageEl.style.color = '#888';
-    paywall.style.display = 'block';
-  }
-}
 
 // ── Scrape handler ──
 async function handleScrape() {
@@ -161,7 +38,6 @@ async function handleScrape() {
   status.textContent = 'Extracting leads...';
   btn.disabled = true;
   document.getElementById('leadCount').style.display = 'none';
-  document.getElementById('paywall-notice').style.display = 'none';
 
   try {
     var allTabs = await chrome.tabs.query({});
@@ -218,19 +94,10 @@ async function handleScrape() {
     }
 
     var totalFound = leads.length;
-    var truncated = !isPro && totalFound > FREE_LEADS_LIMIT;
-
-    if (truncated) {
-      leads = leads.slice(0, FREE_LEADS_LIMIT);
-    }
 
     var leadCountEl = document.getElementById('leadCount');
     leadCountEl.style.display = 'block';
-    if (truncated) {
-      leadCountEl.textContent = totalFound + ' leads found - exporting first ' + FREE_LEADS_LIMIT;
-    } else {
-      leadCountEl.textContent = totalFound + ' leads found';
-    }
+    leadCountEl.textContent = totalFound + ' leads found';
 
     // Build export rows - only checked fields
     var exportData = leads.map(function(l) {
@@ -254,14 +121,8 @@ async function handleScrape() {
       downloadCSV(exportData, safeName);
     }
 
-    if (truncated) {
-      document.getElementById('paywall-notice').style.display = 'block';
-      status.className = 'success';
-      status.textContent = 'Exported ' + FREE_LEADS_LIMIT + ' of ' + totalFound + ' leads. Upgrade for all.';
-    } else {
-      status.className = 'success';
-      status.textContent = 'Exported ' + totalFound + ' leads as ' + selectedFormat.toUpperCase();
-    }
+    status.className = 'success';
+    status.textContent = 'Exported ' + totalFound + ' leads as ' + selectedFormat.toUpperCase();
   } catch (err) {
     status.className = 'error';
     status.textContent = 'Error: ' + err.message;
